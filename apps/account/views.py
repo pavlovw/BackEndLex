@@ -1,41 +1,75 @@
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth import login, authenticate, logout
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import authenticate, login, logout
 from .forms import CustomUserCreationForm, CustomAuthenticationForm
+from rest_framework.permissions import AllowAny
+import jwt
+import datetime
+from django.conf import settings
 
-def register(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        form = CustomUserCreationForm(request.data)
         if form.is_valid():
-            form.save()
-            messages.success(request, '¡Registro exitoso!')
-            return redirect('registration_complete')
+            user = form.save()
+            return Response({
+                'message': '¡Registro exitoso!',
+                'user_id': user.id
+            }, status=status.HTTP_201_CREATED)
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"Error en el campo {field}: {error}")
-            return render(request, 'register.html', {'form': form})
-    else:
-        form = CustomUserCreationForm()
-    return render(request, 'register.html', {'form': form})
+            # Formatear errores de forma más API-friendly
+            errors = {}
+            for field, error_list in form.errors.items():
+                errors[field] = list(error_list)
+            
+            return Response({
+                'message': 'Error en el registro',
+                'errors': errors
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-def login_view(request):
-    if request.method == 'POST':
-        form = CustomAuthenticationForm(request, data=request.POST)
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        form = CustomAuthenticationForm(request, data=request.data)
         if form.is_valid():
             email = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(request, email=email, password=password)
+            
             if user is not None:
                 login(request, user)
-                return redirect('index')
-    else:
-        form = CustomAuthenticationForm()
-    return render(request, 'login.html', {'form': form})
+                
+                # Generar token JWT
+                payload = {
+                    'user_id': user.id,
+                    'email': user.email,
+                    'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1)
+                }
+                token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+                
+                return Response({
+                    'message': 'Inicio de sesión exitoso',
+                    'token': token,
+                    'user_id': user.id,
+                    'email': user.email
+                }, status=status.HTTP_200_OK)
+            
+            return Response({
+                'message': 'Credenciales inválidas'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        return Response({
+            'message': 'Formulario inválido',
+            'errors': form.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
 
-def logout_view(request):
-    logout(request)
-    return redirect('index')
-
-def registration_complete(request):
-    return render(request, 'registration_complete.html')
+class LogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({
+            'message': 'Sesión cerrada exitosamente'
+        }, status=status.HTTP_200_OK)

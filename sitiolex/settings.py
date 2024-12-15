@@ -26,19 +26,31 @@ SECRET_KEY = 'django-insecure-5d4q@ckpzvi!lx^7m_@p-9v^un8_ij79s0fy!@^4^$oa%kancq
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['web-lex-do.onrender.com', 'localhost']
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://web-lex-do.onrender.com',  # Reemplaza con tu dominio real
+ALLOWED_HOSTS = [
+    'web-production-24ee.up.railway.app',  # Tu dominio de Railway
+    'localhost', '127.0.0.1'
 ]
 
-
 CSRF_TRUSTED_ORIGINS = [
-    'https://web-lex-do.onrender.com', 
-    'http://localhost:8000',  # Si es necesario
+    'https://web-production-24ee.up.railway.app',  # Tu dominio
+    'http://localhost:8000',  # Para desarrollo local
 ]
 
+# CSRF_TRUSTED_ORIGINS = [
+#     'https://web-lex-do.onrender.com',  # Reemplaza con tu dominio real
+# ]
 
+
+# CSRF_TRUSTED_ORIGINS = [
+#     'https://web-lex-do.onrender.com', 
+#     'http://localhost:8000',  # Si es necesario
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = False  # Para desarrollo
+
+CORS_ALLOWED_ORIGINS = [
+    "https://frontendlex.onrender.com",
+]
 
 
 # Application definition
@@ -59,6 +71,7 @@ INSTALLED_APPS = [
     'apps.services',
     'apps.ubicacion',
     'corsheaders',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -107,6 +120,13 @@ DATABASES = {
         'PORT': '6543',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 
