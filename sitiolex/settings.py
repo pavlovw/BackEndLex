@@ -32,9 +32,10 @@ ALLOWED_HOSTS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-24ee.up.railway.app',  # Tu dominio
-    'http://localhost:8000',  # Para desarrollo local
+    'https://frontendlex.onrender.com',  # Frontend en Render
+    'https://web-production-24ee.up.railway.app',  # Backend en Railway
 ]
+
 
 # CSRF_TRUSTED_ORIGINS = [
 #     'https://web-lex-do.onrender.com',  # Reemplaza con tu dominio real
@@ -51,6 +52,22 @@ CORS_ALLOW_ALL_ORIGINS = False  # Para desarrollo
 CORS_ALLOWED_ORIGINS = [
     "https://frontendlex.onrender.com",
 ]
+
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "OPTIONS",
+]
+
 
 
 # Application definition
@@ -84,6 +101,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'sitiolex.urls'
